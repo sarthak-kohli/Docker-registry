@@ -1,0 +1,42 @@
+Creation of my own docker registry
+//on 1st vm {where image is created and pushed )
+//Any publically associated image has to have a tag.
+docker tag    myst:v1   name/myst:v1      //applying tag to image name
+
+docker push registry:username/imagename:tag   //image naming convention for a personal registry
+docker push registry.lw.com:5000/myvimal.com
+
+on 2nd vm //which is our registry server containing all images( here image is pushed &from here image is pulled).
+
+docker run -it --name myreg  registry:latest   //creating a image
+
+docker run -it --name myreg  -p 5000:5000 registry:latest //attaching a port number to it.
+
+docker run -it --name myreg -p 5000:5000 -v /docker_repo:/var/lib/registry registry:latest   //mounting a directory /var/lib of my vm to docker directory/var/lib/registry
+
+
+docker run -dit --name myreg -p 5000:5000 -v /docker_repo /var/lib/registry registry:latest //final command for server .
+
+//by default when we pull or push it is on https but i did on http so for that certain change in configuration file has to change.
+after opening http configuration file at line [12,49],
+add --inseccure registry "registry.lw.com":5000
+
+systemctl restart docker//restart service
+
+systemctl daemon-reload
+systemctl restart docker
+
+//3rd vm for pulling your image from 2nd and working and using the way you want
+docker pull  registry.lw.com:5000/myvimal.com
+
+//example of creating a webserver through docker image
+docker run -it --name a centos:latest
+cd /etc/yum.repos.d/
+yum repolist
+vim lw.repo
+[lw]
+baseurl=file:///dvd
+yum install httpd
+cd /var/www/httpd
+cat > index.html //this is my first web-page
+commit the image.
